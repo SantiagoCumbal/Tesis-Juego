@@ -45,12 +45,25 @@ const login = async(req,res)=>{
 
 }
 const perfil =(req,res)=>{
+    if (!req.administradorBDD || req.administradorBDD.rol !== "administrador") {
+        return res.status(403).json({ msg: "Acceso denegado: solo administradores" });
+    }
     const {token,confirmEmail,createdAt,updatedAt,__v,...datosPerfil} = req.administradorBDD
     res.status(200).json(datosPerfil)
 }
 
 const actualizarPerfil = async (req,res)=>{
     const {id} = req.params
+    
+    if (!req.administradorBDD || req.administradorBDD.rol !== "administrador") {
+        return res.status(403).json({ msg: "Acceso denegado: solo administradores" });
+    }
+    
+    // Validar que el administrador solo pueda actualizar su propio perfil
+    if (req.administradorBDD._id.toString() !== id) {
+        return res.status(403).json({ msg: "No tienes permisos para modificar este perfil" });
+    }
+    
     const {nombre,apellido,username,email} = req.body
     if( !mongoose.Types.ObjectId.isValid(id) ) return res.status(404).json(
         {msg:`Lo sentimos, debe ser un id válido`}
@@ -84,6 +97,10 @@ const actualizarPerfil = async (req,res)=>{
     res.status(200).json(datosActualizados)
 }
 const actualizarPassword = async (req,res)=>{
+    if (!req.administradorBDD || req.administradorBDD.rol !== "administrador") {
+        return res.status(403).json({ msg: "Acceso denegado: solo administradores" });
+    }
+    
     const administradorBDD = await Administrador.findById(req.administradorBDD._id)
     if(!administradorBDD) return res.status(404).json(
         {msg:`Alerta este administrador no existe`}
@@ -107,6 +124,15 @@ const actualizarPassword = async (req,res)=>{
 
 const actualizarImagenPerfil = async (req, res) => {
     const { id } = req.params;
+    
+    if (!req.administradorBDD || req.administradorBDD.rol !== "administrador") {
+        return res.status(403).json({ msg: "Acceso denegado: solo administradores" });
+    }
+    
+    // Validar que el administrador solo pueda actualizar su propia imagen
+    if (req.administradorBDD._id.toString() !== id) {
+        return res.status(403).json({ msg: "No tienes permisos para modificar esta imagen" });
+    }
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(404).json({ msg: "ID inválido" });

@@ -160,12 +160,25 @@ const login = async(req,res)=>{
 }
 
 const perfil =(req,res)=>{
+    if (!req.jugadorBDD || req.jugadorBDD.rol !== "jugador") {
+        return res.status(403).json({ msg: "Acceso denegado: solo jugadores" });
+    }
     const {token,confirmEmail,createdAt,updatedAt,__v,...datosPerfil} = req.jugadorBDD
     res.status(200).json(datosPerfil)
 }
 
 const actualizarPerfil = async (req,res)=>{
     const {id} = req.params
+    
+    if (!req.jugadorBDD || req.jugadorBDD.rol !== "jugador") {
+        return res.status(403).json({ msg: "Acceso denegado: solo jugadores" });
+    }
+    
+    // Validar que el jugador solo pueda actualizar su propio perfil
+    if (req.jugadorBDD._id.toString() !== id) {
+        return res.status(403).json({ msg: "No tienes permisos para modificar este perfil" });
+    }
+    
     const {nombre,apellido,username,email} = req.body
     if( !mongoose.Types.ObjectId.isValid(id) ) return res.status(404).json(
         {msg:`Lo sentimos, debe ser un id válido`}
@@ -200,6 +213,10 @@ const actualizarPerfil = async (req,res)=>{
 }
 
 const actualizarPassword = async (req,res)=>{
+    if (!req.jugadorBDD || req.jugadorBDD.rol !== "jugador") {
+        return res.status(403).json({ msg: "Acceso denegado: solo jugadores" });
+    }
+    
     const jugadorBDD = await Jugadores.findById(req.jugadorBDD._id)
     if(!jugadorBDD) return res.status(404).json(
         {msg:`Lo sentimos, no existe el jugador ${id}`}
@@ -223,6 +240,15 @@ const actualizarPassword = async (req,res)=>{
 
 const actualizarImagenPerfil = async (req, res) => {
     const { id } = req.params;
+    
+    if (!req.jugadorBDD || req.jugadorBDD.rol !== "jugador") {
+        return res.status(403).json({ msg: "Acceso denegado: solo jugadores" });
+    }
+    
+    // Validar que el jugador solo pueda actualizar su propia imagen
+    if (req.jugadorBDD._id.toString() !== id) {
+        return res.status(403).json({ msg: "No tienes permisos para modificar esta imagen" });
+    }
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(404).json({ msg: "ID inválido" });
@@ -268,6 +294,10 @@ const actualizarImagenPerfil = async (req, res) => {
 }
 
 const donarJugador = async (req, res) => {
+    if (!req.jugadorBDD || req.jugadorBDD.rol !== "jugador") {
+        return res.status(403).json({ msg: "Acceso denegado: solo jugadores" });
+    }
+    
     const { paymentMethodId, cantidad, motivo } = req.body;
 
     if (!paymentMethodId || !cantidad || cantidad <= 1) {
@@ -331,6 +361,10 @@ const donarJugador = async (req, res) => {
 }
 const descargarJuego = async (req, res) => {
     try {
+        if (!req.jugadorBDD || req.jugadorBDD.rol !== "jugador") {
+            return res.status(403).json({ msg: "Acceso denegado: solo jugadores" });
+        }
+        
         const jugador = req.jugadorBDD;
         if (!jugador) return res.status(401).json({ msg: "No autorizado" });
 
@@ -365,6 +399,10 @@ const descargarJuego = async (req, res) => {
 };
 const eliminarCuentaJugador = async (req, res) => {
     const { id } = req.params;
+    
+    if (!req.jugadorBDD || req.jugadorBDD.rol !== "jugador") {
+        return res.status(403).json({ msg: "Acceso denegado: solo jugadores" });
+    }
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(404).json(
@@ -372,7 +410,7 @@ const eliminarCuentaJugador = async (req, res) => {
         )
     }
 
-    if (req.jugadorBDD?._id.toString() !== id) {
+    if (req.jugadorBDD._id.toString() !== id) {
         return res.status(403).json(
             { msg: "No tienes permisos para eliminar esta cuenta" }
         )
@@ -390,6 +428,10 @@ const eliminarCuentaJugador = async (req, res) => {
 
 const verPublicaciones = async (req, res) => {
     try {
+        if (!req.jugadorBDD || req.jugadorBDD.rol !== "jugador") {
+            return res.status(403).json({ msg: "Acceso denegado: solo jugadores" });
+        }
+        
         const publicaciones = await Publicaciones.find()
             .populate("administrador", "nombre apellido username")
             .sort({ createdAt: -1 });
@@ -403,6 +445,10 @@ const verPublicaciones = async (req, res) => {
 
 const verDetallePublicacion = async (req, res) => {
     try {
+        if (!req.jugadorBDD || req.jugadorBDD.rol !== "jugador") {
+            return res.status(403).json({ msg: "Acceso denegado: solo jugadores" });
+        }
+        
         const { id } = req.params;
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
