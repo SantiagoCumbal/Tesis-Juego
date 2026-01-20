@@ -59,7 +59,6 @@ const actualizarPerfil = async (req,res)=>{
         return res.status(403).json({ msg: "Acceso denegado: solo administradores" });
     }
     
-    // Validar que el administrador solo pueda actualizar su propio perfil
     if (req.administradorBDD._id.toString() !== id) {
         return res.status(403).json({ msg: "No tienes permisos para modificar este perfil" });
     }
@@ -129,7 +128,6 @@ const actualizarImagenPerfil = async (req, res) => {
         return res.status(403).json({ msg: "Acceso denegado: solo administradores" });
     }
     
-    // Validar que el administrador solo pueda actualizar su propia imagen
     if (req.administradorBDD._id.toString() !== id) {
         return res.status(403).json({ msg: "No tienes permisos para modificar esta imagen" });
     }
@@ -144,14 +142,12 @@ const actualizarImagenPerfil = async (req, res) => {
     }
 
     try {
-        // Si ya tiene imagen previa en Cloudinary, eliminarla
         if (administradorBDD.avatarAdministradorID) {
             await cloudinary.uploader.destroy(administradorBDD.avatarAdministradorID);
         }
 
         let secure_url, public_id;
 
-        // Caso 1: Imagen subida como archivo
         if (req.files?.imagen) {
             const { tempFilePath } = req.files.imagen;
             ({ secure_url, public_id } = await cloudinary.uploader.upload(tempFilePath, {

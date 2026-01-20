@@ -6,8 +6,6 @@ import routerAdministrador from './routers/Administrador_routes.js'
 import fileUpload from 'express-fileupload'
 import cloudinary  from 'cloudinary'
 
-
-// Inicializaciones
 const app = express()
 dotenv.config()
 
@@ -22,21 +20,15 @@ app.use(fileUpload({
     tempFileDir: './uploads',
 }))
 
-// Middlewares
 app.use(cors())
-app.use(express.json()) // Para JSON
+app.use(express.json())
 
-
-// Variables globales
 app.set('port', process.env.PORT || 3000)
 
-// Rutas
 app.get('/', (req,res)=> res.send("Server on"))
 app.use('/api', routerJugadores)
 app.use('/api', routerAdministrador)
 
-
-// Ruta no encontrada
 app.use((req,res)=> res.status(404).json({msg:"Endpoint no encontrado - 404"}))
 
 export default app

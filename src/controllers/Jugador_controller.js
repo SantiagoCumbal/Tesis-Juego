@@ -12,7 +12,6 @@ import { fileURLToPath } from "url";
 import { Stripe } from "stripe"
 const stripe = new Stripe(`${process.env.STRIPE_PRIVATE_KEY}`)
 
-// Rutas seguras
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -38,10 +37,8 @@ const registro = async (req, res) => {
     nuevojugador.avatarJugador = secure_url;
     nuevojugador.avatarJugadorID = public_id;
 
-    // Encriptar contraseña
     nuevojugador.password = await nuevojugador.encrypPassword(password);
 
-    // Crear token y enviar correo
     const token = nuevojugador.crearToken();
     await sendMailToRegister(email, token);
 
@@ -174,7 +171,6 @@ const actualizarPerfil = async (req,res)=>{
         return res.status(403).json({ msg: "Acceso denegado: solo jugadores" });
     }
     
-    // Validar que el jugador solo pueda actualizar su propio perfil
     if (req.jugadorBDD._id.toString() !== id) {
         return res.status(403).json({ msg: "No tienes permisos para modificar este perfil" });
     }
@@ -245,7 +241,6 @@ const actualizarImagenPerfil = async (req, res) => {
         return res.status(403).json({ msg: "Acceso denegado: solo jugadores" });
     }
     
-    // Validar que el jugador solo pueda actualizar su propia imagen
     if (req.jugadorBDD._id.toString() !== id) {
         return res.status(403).json({ msg: "No tienes permisos para modificar esta imagen" });
     }
@@ -260,14 +255,12 @@ const actualizarImagenPerfil = async (req, res) => {
     }
 
     try {
-        // Si ya tiene imagen previa en Cloudinary, eliminarla
         if (jugador.avatarJugadorID) {
             await cloudinary.uploader.destroy(jugador.avatarJugadorID);
         }
 
         let secure_url, public_id;
 
-        // Caso 1: Imagen subida como archivo
         if (req.files?.imagen) {
             const { tempFilePath } = req.files.imagen;
             ({ secure_url, public_id } = await cloudinary.uploader.upload(tempFilePath, {
@@ -372,11 +365,9 @@ const descargarJuego = async (req, res) => {
         const rutaArchivo = path.join(__dirname, "../archive", nombreArchivo);
         if (!fs.existsSync(rutaArchivo)) return res.status(404).json({ msg: "Archivo no encontrado" });
 
-        // Obtener el número de descarga actual
         const ultimaDescarga = await Descarga.findOne().sort({ numeroDescarga: -1 });
         const numeroDescarga = ultimaDescarga ? ultimaDescarga.numeroDescarga + 1 : 1;
 
-        // Guardar descarga
         const nuevaDescarga = new Descarga({
             numeroDescarga,
             jugador: jugador._id
@@ -384,7 +375,6 @@ const descargarJuego = async (req, res) => {
         });
         await nuevaDescarga.save();
 
-        // Enviar archivo
         res.download(rutaArchivo, nombreArchivo, (err) => {
             if (err) {
                 console.error("Error al enviar archivo:", err);
