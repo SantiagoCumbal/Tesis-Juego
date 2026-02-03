@@ -203,7 +203,7 @@ const actualizarPerfil = async (req,res)=>{
     jugadorBDD.email = email ?? jugadorBDD.email
     
     await jugadorBDD.save()
-    const {token,confirmEmail,createdAt,updatedAt,__v,password,...datosActualizados} = req.jugadorBDD
+    const {token,confirmEmail,createdAt,updatedAt,__v,password,...datosActualizados} = jugadorBDD.toObject()
 
     res.status(200).json(datosActualizados)
 }

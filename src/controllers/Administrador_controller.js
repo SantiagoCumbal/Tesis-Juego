@@ -91,7 +91,7 @@ const actualizarPerfil = async (req,res)=>{
     administradorBDD.email = email ?? administradorBDD.email
     
     await administradorBDD.save()
-    const {token,confirmEmail,createdAt,updatedAt,__v,password,...datosActualizados} = req.administradorBDD
+    const {token,confirmEmail,createdAt,updatedAt,__v,password,...datosActualizados} = administradorBDD.toObject()
 
     res.status(200).json(datosActualizados)
 }
