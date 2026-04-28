@@ -31,7 +31,7 @@ const sendMailToRegister = (userMail, token) => {
                 <img src="cid:logo" alt="Delta Studio Logo" style="width: 120px; margin-bottom: 20px;" />
                 <h1 style="color: #a0a0a0;">Bienvenido a Wraith</h1>
                 <p style="font-size: 16px;">Has sido elegido para comenzar tu travesía en el mundo de Wraith. Antes de adentrarte en las mazmorras y descubrir los secretos que te esperan, debes activar tu vínculo haciendo clic en el botón.</p>
-                <a href="${process.env.URL_BACKEND}confirmar/${token}" 
+                <a href="${process.env.URL_FRONTEND}confirmar/${token}" 
                     style="display: inline-block; padding: 12px 25px; margin-top: 20px; font-size: 16px; background-color: #4b4b4b; color: #ffffff; text-decoration: none; border-radius: 5px;">
                     Confirmar Cuenta
                 </a>
@@ -71,7 +71,7 @@ const sendMailToRecoveryPassword = async(userMail, token) => {
                 <img src="cid:logo" alt="Delta Studio Logo" style="width: 100px; margin-bottom: 20px;" />
                 <h1 style="color: #a0a0a0;">Reestablecer contraseña</h1>
                 <p style="font-size: 16px;">Haz clic en el botón para restablecer tu contraseña:</p>
-                <a href="${process.env.URL_BACKEND}recuperarpassword/${token}" 
+                <a href="${process.env.URL_FRONTEND}recuperarpassword/${token}" 
                     style="display: inline-block; padding: 12px 25px; margin-top: 20px; font-size: 16px; background-color: #4b4b4b; color: #ffffff; text-decoration: none; border-radius: 5px;">
                     Reestablecer Contraseña
                 </a>
