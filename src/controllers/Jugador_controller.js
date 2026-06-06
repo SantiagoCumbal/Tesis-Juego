@@ -486,6 +486,7 @@ export {
     actualizarPerfil,
     actualizarPassword,
     actualizarImagenPerfil,
+    verJugadores,
     donarJugador,
     descargarJuego,
     eliminarCuentaJugador,
