@@ -355,7 +355,7 @@ const donarJugador = async (req, res) => {
 
 const verJugadores = async (req, res) => {
     try {
-        if (!req.administradorBDD || req.administradorBDD.rol !== "jugador") {
+        if (!req.jugadorBDD || req.jugadorBDD.rol !== "jugador") {
         return res.status(403).json({ msg: "Acceso denegado: solo jugadores" });
         }
 
