@@ -1,5 +1,5 @@
 import {Router} from 'express'
-import {confirmarEmail, registro, recuperarPassword, comprobarTokenPassword, crearNuevaPassword, login, perfil, actualizarPerfil, actualizarPassword, donarJugador, actualizarImagenPerfil, descargarJuego, eliminarCuentaJugador, verPublicaciones, verDetallePublicacion} from '../controllers/Jugador_controller.js'
+import {confirmarEmail, registro, recuperarPassword, comprobarTokenPassword, crearNuevaPassword, login, perfil, actualizarPerfil, actualizarPassword, verJugadores, donarJugador, actualizarImagenPerfil, descargarJuego, eliminarCuentaJugador, verPublicaciones, verDetallePublicacion} from '../controllers/Jugador_controller.js'
 import { verificarTokenJWT } from '../middlewares/JWT.js'
 
 const router = Router()
@@ -14,6 +14,7 @@ router.get('/perfil',verificarTokenJWT,perfil)
 router.put('/jugador/:id',verificarTokenJWT,actualizarPerfil)
 router.put('/jugador/actualizarpassword/:id',verificarTokenJWT,actualizarPassword)
 router.put('/jugador/imagen/:id',verificarTokenJWT,actualizarImagenPerfil)
+router.get('/jugador/jugadores', verificarTokenJWT, verJugadores);
 router.post('/jugador/donar',verificarTokenJWT, donarJugador)
 router.get("/descargar/:nombreArchivo", verificarTokenJWT, descargarJuego);
 router.delete('/jugador/eliminar/:id', verificarTokenJWT, eliminarCuentaJugador)

@@ -352,6 +352,22 @@ const donarJugador = async (req, res) => {
         )
     }
 }
+
+const verJugadores = async (req, res) => {
+    try {
+        if (!req.administradorBDD || req.administradorBDD.rol !== "jugador") {
+        return res.status(403).json({ msg: "Acceso denegado: solo jugadores" });
+        }
+
+        const jugadores = await Jugadores.find().select("nombre apellido username email status createdAt").sort({ createdAt: -1 });
+
+        res.status(200).json(jugadores);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Error al obtener jugadores" });
+    }
+};
+
 const descargarJuego = async (req, res) => {
     try {
         if (!req.jugadorBDD || req.jugadorBDD.rol !== "jugador") {
