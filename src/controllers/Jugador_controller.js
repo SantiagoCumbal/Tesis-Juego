@@ -22,40 +22,56 @@ const registro = async (req, res) => {
         return res.status(400).json({ msg: "Debes llenar todos los campos" });
     }
 
-    const verificarEmailBDD = await Jugadores.findOne({ email });
-    if (verificarEmailBDD) {
-        return res.status(400).json({ msg: "El email ya está registrado" });
-    }
-
-    const nuevojugador = new Jugadores(req.body);
-
-    const defaultImagePath = path.join(__dirname, '../config/images/new.jpg');
-    const { secure_url, public_id } = await cloudinary.uploader.upload(
-        defaultImagePath,
-        { folder: "Jugadores" }
-    );
-    nuevojugador.avatarJugador = secure_url;
-    nuevojugador.avatarJugadorID = public_id;
-
-    nuevojugador.password = await nuevojugador.encrypPassword(password);
-
-    const token = nuevojugador.crearToken();
-
-    // Guardar primero: la cuenta queda creada aunque el correo falle, y el usuario
-    // puede solicitar el reenvío desde /reenviar-confirmacion sin quedar bloqueado.
-    await nuevojugador.save();
-
     try {
-        await sendMailToRegister(email, token);
-        return res.status(200).json(
-            { msg: "Revisa tu correo electrónico para confirmar tu cuenta" }
+        const verificarEmailBDD = await Jugadores.findOne({ email });
+        if (verificarEmailBDD) {
+            return res.status(400).json({ msg: "El email ya está registrado" });
+        }
+
+        // username es unique en el schema. Si no se valida aquí, save() lanza
+        // E11000 (excepción no capturada) y el cliente recibe un 500 HTML feo.
+        const verificarUsername = await Jugadores.findOne({ username: req.body.username });
+        if (verificarUsername) {
+            return res.status(400).json({ msg: "El nombre de usuario ya está en uso" });
+        }
+
+        const nuevojugador = new Jugadores(req.body);
+
+        const defaultImagePath = path.join(__dirname, '../config/images/new.jpg');
+        const { secure_url, public_id } = await cloudinary.uploader.upload(
+            defaultImagePath,
+            { folder: "Jugadores" }
         );
+        nuevojugador.avatarJugador = secure_url;
+        nuevojugador.avatarJugadorID = public_id;
+
+        nuevojugador.password = await nuevojugador.encrypPassword(password);
+
+        const token = nuevojugador.crearToken();
+
+        // Guardar primero: la cuenta queda creada aunque el correo falle, y el usuario
+        // puede solicitar el reenvío desde /reenviar-confirmacion sin quedar bloqueado.
+        await nuevojugador.save();
+
+        try {
+            await sendMailToRegister(email, token);
+            return res.status(200).json(
+                { msg: "Revisa tu correo electrónico para confirmar tu cuenta" }
+            );
+        } catch (mailError) {
+            console.error("Error al enviar correo de registro:", mailError);
+            return res.status(200).json({
+                msg: "Tu cuenta fue creada, pero no pudimos enviar el correo de confirmación. Usa la opción \"Reenviar correo de confirmación\".",
+                emailFailed: true
+            });
+        }
     } catch (error) {
-        console.error("Error al enviar correo de registro:", error);
-        return res.status(200).json({
-            msg: "Tu cuenta fue creada, pero no pudimos enviar el correo de confirmación. Usa la opción \"Reenviar correo de confirmación\".",
-            emailFailed: true
-        });
+        console.error("Error en registro:", error);
+        // Llave duplicada (email/username) -> respuesta clara en vez de 500 HTML.
+        if (error?.code === 11000) {
+            return res.status(400).json({ msg: "El email o el nombre de usuario ya están registrados" });
+        }
+        return res.status(500).json({ msg: "No se pudo completar el registro. Intenta nuevamente." });
     }
 };
 
