@@ -40,13 +40,60 @@ const registro = async (req, res) => {
     nuevojugador.password = await nuevojugador.encrypPassword(password);
 
     const token = nuevojugador.crearToken();
-    await sendMailToRegister(email, token);
 
-    
-    await nuevojugador.save()
-    res.status(200).json(
-        {msg:"Revisa tu correo electrónico para confirmar tu cuenta"}
-    )
+    // Guardar primero: la cuenta queda creada aunque el correo falle, y el usuario
+    // puede solicitar el reenvío desde /reenviar-confirmacion sin quedar bloqueado.
+    await nuevojugador.save();
+
+    try {
+        await sendMailToRegister(email, token);
+        return res.status(200).json(
+            { msg: "Revisa tu correo electrónico para confirmar tu cuenta" }
+        );
+    } catch (error) {
+        console.error("Error al enviar correo de registro:", error);
+        return res.status(200).json({
+            msg: "Tu cuenta fue creada, pero no pudimos enviar el correo de confirmación. Usa la opción \"Reenviar correo de confirmación\".",
+            emailFailed: true
+        });
+    }
+};
+
+// Reenvía el correo de verificación a una cuenta que aún no ha sido confirmada.
+// Garantiza que la opción de verificar el correo esté siempre disponible aunque
+// el primer envío haya fallado (bloqueo de Gmail, buzón lleno, etc.).
+const reenviarConfirmacion = async (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+        return res.status(400).json({ msg: "Debes proporcionar tu correo electrónico" });
+    }
+
+    const jugadorBDD = await Jugadores.findOne({ email });
+    if (!jugadorBDD) {
+        return res.status(404).json({ msg: "No existe una cuenta registrada con ese correo" });
+    }
+    if (jugadorBDD.confirmEmail) {
+        return res.status(400).json({ msg: "Esta cuenta ya está confirmada, ya puedes iniciar sesión" });
+    }
+
+    // Si por algún motivo no tiene token activo, generamos uno nuevo.
+    let token = jugadorBDD.token;
+    if (!token) {
+        token = jugadorBDD.crearToken();
+        await jugadorBDD.save();
+    }
+
+    try {
+        await sendMailToRegister(email, token);
+        return res.status(200).json({
+            msg: "Te reenviamos el correo de confirmación. Revisa tu bandeja de entrada y la carpeta de spam."
+        });
+    } catch (error) {
+        console.error("Error al reenviar correo de confirmación:", error);
+        return res.status(500).json({
+            msg: "No se pudo enviar el correo en este momento. Intenta nuevamente en unos minutos."
+        });
+    }
 };
 
 const confirmarEmail = async (req,res)=>{
@@ -475,9 +522,10 @@ const verDetallePublicacion = async (req, res) => {
     }
 };
 
-export { 
+export {
     registro,
     confirmarEmail,
+    reenviarConfirmacion,
     recuperarPassword,
     comprobarTokenPassword,
     crearNuevaPassword,

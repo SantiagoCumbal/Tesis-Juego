@@ -1,11 +1,12 @@
 import {Router} from 'express'
-import {confirmarEmail, registro, recuperarPassword, comprobarTokenPassword, crearNuevaPassword, login, perfil, actualizarPerfil, actualizarPassword, verJugadores, donarJugador, actualizarImagenPerfil, descargarJuego, eliminarCuentaJugador, verPublicaciones, verDetallePublicacion} from '../controllers/Jugador_controller.js'
+import {confirmarEmail, registro, reenviarConfirmacion, recuperarPassword, comprobarTokenPassword, crearNuevaPassword, login, perfil, actualizarPerfil, actualizarPassword, verJugadores, donarJugador, actualizarImagenPerfil, descargarJuego, eliminarCuentaJugador, verPublicaciones, verDetallePublicacion} from '../controllers/Jugador_controller.js'
 import { verificarTokenJWT } from '../middlewares/JWT.js'
 
 const router = Router()
 
 router.post('/registro',registro)
 router.get('/confirmar/:token',confirmarEmail)
+router.post('/reenviar-confirmacion',reenviarConfirmacion)
 router.post('/recuperarpassword',recuperarPassword)
 router.get('/recuperarpassword/:token',comprobarTokenPassword)
 router.post('/nuevopassword/:token',crearNuevaPassword)
