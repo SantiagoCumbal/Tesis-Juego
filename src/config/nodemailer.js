@@ -19,18 +19,19 @@ dotenv.config()
  * de llegar. Con un proveedor transaccional (Resend) la entrega es fiable porque
  * usa SPF/DKIM propios y no depende de los límites de Gmail.
  *
- * Resend SMTP:  host=smtp.resend.com  port=465 (SSL) ó 587/2587 (STARTTLS)
- *               user="resend"         pass=API key (re_...)
+ * Brevo SMTP:  host=smtp-relay.brevo.com  port=587 (STARTTLS)
+ *              user=login/correo de la cuenta Brevo   pass=SMTP key (no la contraseña de la cuenta)
  *
- * Como es SMTP estándar, las mismas variables sirven para Brevo o SendGrid sin
- * tocar código (solo cambian los valores en el .env).
+ * Brevo permite usar como remitente un correo @gmail.com verificado (single
+ * sender), por eso MAIL_FROM puede ser my.delta.studio@gmail.com. Como es SMTP
+ * estándar, las mismas variables sirven para Resend/SendGrid cambiando solo el .env.
  */
-const SMTP_PORT = Number(process.env.SMTP_PORT || process.env.PORT_MAILTRAP) || 465
+const SMTP_PORT = Number(process.env.SMTP_PORT || process.env.PORT_MAILTRAP) || 587
 
 let transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || process.env.HOST_MAILTRAP || "smtp.resend.com",
+    host: process.env.SMTP_HOST || process.env.HOST_MAILTRAP || "smtp-relay.brevo.com",
     port: SMTP_PORT,
-    secure: SMTP_PORT === 465, // true para 465 (SSL); false para 587/2587 (STARTTLS)
+    secure: SMTP_PORT === 465, // true solo para 465 (SSL); 587/2587 usan STARTTLS
     auth: {
         user: process.env.SMTP_USER || process.env.USER_MAILTRAP,
         pass: process.env.SMTP_PASS || process.env.PASS_MAILTRAP,
@@ -38,13 +39,11 @@ let transporter = nodemailer.createTransport({
 });
 
 /**
- * Remitente. IMPORTANTE: Resend NO permite enviar desde una dirección @gmail.com.
- * El `from` debe ser un dominio verificado en Resend, p. ej.
- *   MAIL_FROM="Wraith - Delta Studio <no-reply@tudominio.com>"
- * Sin dominio propio, `onboarding@resend.dev` solo entrega al dueño de la cuenta
- * Resend (no a usuarios arbitrarios), por lo que NO sirve para producción.
+ * Remitente. Debe ser un sender verificado en Brevo. Brevo sí admite un correo
+ * @gmail.com como single sender (lo confirmas con un clic desde ese Gmail), por
+ * eso aquí el remitente es my.delta.studio@gmail.com.
  */
-const MAIL_FROM = process.env.MAIL_FROM || "Wraith - Delta Studio <onboarding@resend.dev>"
+const MAIL_FROM = process.env.MAIL_FROM || "Wraith - Delta Studio <my.delta.studio@gmail.com>"
 
 const sendMailToRegister = async (userMail, token) => {
     let mailOptions = {
