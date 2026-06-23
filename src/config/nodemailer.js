@@ -52,6 +52,15 @@ const MAIL_FROM = process.env.MAIL_FROM || "Wraith - Delta Studio <my.delta.stud
 const MAIL_FROM_NAME = "Wraith - Delta Studio"
 const MAIL_FROM_EMAIL = process.env.MAIL_FROM_EMAIL || extraerEmail(MAIL_FROM) || "my.delta.studio@gmail.com"
 
+// Base del frontend para los enlaces de los correos. Se normaliza a una sola
+// barra final, sin importar cómo esté la variable. Incluye /api porque el
+// frontend define las rutas api/confirmar/:token y api/recuperarpassword/:token.
+// Default = producción por si falta. OJO: si en Render URL_FRONTEND apunta a
+// localhost, los enlaces saldrán a localhost; hay que ponerla con la URL pública.
+const FRONTEND_URL = (process.env.URL_FRONTEND || "https://wraith-web.vercel.app/api/")
+    .trim()
+    .replace(/\/+$/, "") + "/"
+
 /**
  * Envío central. Lanza si falla, para que el controlador lo capture.
  */
@@ -90,7 +99,7 @@ const sendMailToRegister = async (userMail, token) => {
             <div style="text-align: center;">
                 <h1 style="color: #a0a0a0;">Bienvenido a Wraith</h1>
                 <p style="font-size: 16px;">Has sido elegido para comenzar tu travesía en el mundo de Wraith. Antes de adentrarte en las mazmorras y descubrir los secretos que te esperan, debes activar tu vínculo haciendo clic en el botón.</p>
-                <a href="${process.env.URL_FRONTEND}confirmar/${token}"
+                <a href="${FRONTEND_URL}confirmar/${token}"
                     style="display: inline-block; padding: 12px 25px; margin-top: 20px; font-size: 16px; background-color: #4b4b4b; color: #ffffff; text-decoration: none; border-radius: 5px;">
                     Confirmar Cuenta
                 </a>
@@ -114,7 +123,7 @@ const sendMailToRecoveryPassword = async (userMail, token) => {
             <div style="text-align: center;">
                 <h1 style="color: #a0a0a0;">Reestablecer contraseña</h1>
                 <p style="font-size: 16px;">Haz clic en el botón para restablecer tu contraseña:</p>
-                <a href="${process.env.URL_FRONTEND}recuperarpassword/${token}"
+                <a href="${FRONTEND_URL}recuperarpassword/${token}"
                     style="display: inline-block; padding: 12px 25px; margin-top: 20px; font-size: 16px; background-color: #4b4b4b; color: #ffffff; text-decoration: none; border-radius: 5px;">
                     Reestablecer Contraseña
                 </a>
